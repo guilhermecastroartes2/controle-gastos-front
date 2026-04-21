@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart, Bar, Xaxis, Tooltrip, CartesianGrid} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 function App() {
   const [transacoes, setTransacoes] = useState([]);
