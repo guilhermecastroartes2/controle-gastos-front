@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from "recharts";
 
 function App() {
@@ -9,15 +9,12 @@ function App() {
   const [senha, setSenha] = useState("");
   const [transacoes, setTransacoes] = useState([]);
   
-  // Estados de formulário e filtros
   const [valor, setValor] = useState("");
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
   const [tipo, setTipo] = useState("despesa");
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [filtroData, setFiltroData] = useState("");
-
-  // ESTADO PARA MOSTRAR/ESCONDER GRÁFICOS
   const [mostrarGraficos, setMostrarGraficos] = useState(false);
 
   const API_URL = "https://controle-gastos-api-bfph.onrender.com";
@@ -58,7 +55,6 @@ function App() {
     });
   };
 
-  // Lógica para preparar dados dos gráficos
   const prepararDadosGrafico = (tipoFiltro) => {
     const dadosMap = transacoes
       .filter(t => t.tipo === tipoFiltro)
@@ -98,23 +94,22 @@ function App() {
         <button onClick={() => {localStorage.clear(); window.location.reload();}} style={btnSair}>Sair</button>
       </header>
 
-      {/* BOTÃO PARA MOSTRAR/ESCONDER GRÁFICOS */}
       <button 
         onClick={() => setMostrarGraficos(!mostrarGraficos)} 
         style={{...btn, background: '#3498db', marginBottom: '15px'}}
       >
-        {mostrarGraficos ? "▲ Esconder Gráficos" : "📊 Mostrar Gráficos de Receita e Despesa"}
+        {mostrarGraficos ? "▲ Esconder Gráficos" : "📊 Mostrar Gráficos"}
       </button>
 
       {mostrarGraficos && (
-        <div style={{ animation: 'fadeIn 0.5s' }}>
+        <div>
           <div style={card}>
-            <h4 style={{color: '#2ecc71'}}>📈 Receitas por Categoria</h4>
-            <div style={{ height: 200 }}>
+            <h4 style={{color: '#2ecc71', marginTop: 0}}>📈 Receitas por Categoria</h4>
+            <div style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dadosReceitas}>
-                  <XAxis dataKey="name" fontSize={12} />
-                  <YAxis fontSize={12} />
+                  <XAxis dataKey="name" fontSize={10} />
+                  <YAxis fontSize={10} />
                   <Tooltip />
                   <Bar dataKey="value" fill="#2ecc71" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -123,12 +118,12 @@ function App() {
           </div>
 
           <div style={card}>
-            <h4 style={{color: '#e74c3c'}}>📉 Despesas por Categoria</h4>
-            <div style={{ height: 200 }}>
+            <h4 style={{color: '#e74c3c', marginTop: 0}}>📉 Despesas por Categoria</h4>
+            <div style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dadosDespesas}>
-                  <XAxis dataKey="name" fontSize={12} />
-                  <YAxis fontSize={12} />
+                  <XAxis dataKey="name" fontSize={10} />
+                  <YAxis fontSize={10} />
                   <Tooltip />
                   <Bar dataKey="value" fill="#e74c3c" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -138,12 +133,14 @@ function App() {
         </div>
       )}
 
-      {/* FILTROS E BUSCA */}
       <div style={card}>
         <h4>Pesquisar Transações</h4>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-          <input type="date" onChange={(e) => setFiltroData(e.target.value.split('-').reverse().join('/'))} style={inputStyle} />
-          <button onClick={() => setFiltroData("")} style={{...btn, width: '80px', background: '#ccc'}}>Limpar</button>
+          <input type="date" onChange={(e) => {
+            const dataF = e.target.value.split('-').reverse().join('/');
+            setFiltroData(dataF);
+          }} style={inputStyle} />
+          <button onClick={() => setFiltroData("")} style={{...btn, width: '80px', background: '#ccc', fontSize: '12px'}}>Limpar</button>
         </div>
         <div style={flexRow}>
           <button onClick={() => setFiltroTipo("todos")} style={filtroTipo === "todos" ? btnAtivo : btnInativo}>Todos</button>
@@ -152,24 +149,25 @@ function App() {
         </div>
       </div>
 
-      {/* LISTA */}
       <div style={card}>
-        <h3>{filtroTipo === "todos" ? "Histórico" : filtroTipo.toUpperCase()}</h3>
-        {transacoesFiltradas.map(t => (
-          <div key={t.id} style={itemLista}>
-            <div><b>{t.categoria}</b><br/><small>{t.data}</small></div>
-            <span style={{ color: t.tipo === 'receita' ? '#2ecc71' : '#e74c3c', fontWeight: 'bold' }}>
-              R$ {parseFloat(t.valor).toFixed(2)}
-            </span>
-          </div>
-        ))}
+        <h3>Histórico</h3>
+        {transacoesFiltradas.length === 0 ? <p style={{textAlign:'center'}}>Sem dados.</p> : 
+          transacoesFiltradas.map(t => (
+            <div key={t.id} style={itemLista}>
+              <div><b>{t.categoria}</b><br/><small>{t.data}</small></div>
+              <span style={{ color: t.tipo === 'receita' ? '#2ecc71' : '#e74c3c', fontWeight: 'bold' }}>
+                R$ {parseFloat(t.valor).toFixed(2)}
+              </span>
+            </div>
+          ))
+        }
       </div>
 
-      {/* FORMULÁRIO */}
       <div style={card}>
         <h3>Novo Lançamento</h3>
         <input type="number" placeholder="Valor" value={valor} onChange={(e) => setValor(e.target.value)} style={inputStyle} />
         <input placeholder="Categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} style={inputStyle} />
+        <input placeholder="Descrição" value={descricao} onChange={(e) => setDescricao(e.target.value)} style={inputStyle} />
         <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={inputStyle}>
           <option value="despesa">Despesa</option>
           <option value="receita">Receita</option>
@@ -180,19 +178,18 @@ function App() {
   );
 }
 
-// ESTILOS
-const containerApp = { maxWidth: 500, margin: "0 auto", padding: "20px", fontFamily: 'sans-serif' };
-const containerLogin = { maxWidth: 350, margin: "100px auto", textAlign: 'center', padding: '20px' };
+const containerApp = { maxWidth: 500, margin: "0 auto", padding: "10px", fontFamily: 'sans-serif' };
+const containerLogin = { maxWidth: 350, margin: "80px auto", textAlign: 'center', padding: '20px' };
 const card = { background: "#fff", padding: "15px", borderRadius: "12px", marginBottom: "15px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", boxSizing: 'border-box' };
 const inputStyle = { width: "100%", padding: "12px", marginBottom: "10px", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" };
 const btn = { width: "100%", padding: "12px", background: "#4CAF50", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: 'bold' };
 const btnSair = { background: '#e74c3c', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' };
 const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' };
-const flexRow = { display: 'flex', gap: '10px' };
+const flexRow = { display: 'flex', gap: '5px' };
 const itemLista = { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' };
-const btnAtivo = { ...btn, background: '#34495e' };
-const btnInativo = { ...btn, background: '#ecf0f1', color: '#7f8c8d' };
-const btnReceita = { ...btn, background: '#2ecc71' };
-const btnDespesa = { ...btn, background: '#e74c3c' };
+const btnAtivo = { ...btn, background: '#34495e', padding: '10px 5px', fontSize: '12px' };
+const btnInativo = { ...btn, background: '#ecf0f1', color: '#7f8c8d', padding: '10px 5px', fontSize: '12px' };
+const btnReceita = { ...btn, background: '#2ecc71', padding: '10px 5px', fontSize: '12px' };
+const btnDespesa = { ...btn, background: '#e74c3c', padding: '10px 5px', fontSize: '12px' };
 
 export default App;
