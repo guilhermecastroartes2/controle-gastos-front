@@ -55,24 +55,32 @@ function App() {
     });
   };
 
-  const prepararDadosGrafico = (tipoFiltro) => {
-    const dadosMap = transacoes
-      .filter(t => t.tipo === tipoFiltro)
+  // --- LÓGICA DE FILTRAGEM E TOTAIS ---
+  const transacoesFiltradas = transacoes.filter(t => {
+    const bateTipo = filtroTipo === "todos" || t.tipo === filtroTipo;
+    const bateData = filtroData === "" || t.data.includes(filtroData);
+    return bateTipo && bateData;
+  });
+
+  const totalReceitas = transacoesFiltradas
+    .filter(t => t.tipo === "receita")
+    .reduce((acc, t) => acc + parseFloat(t.valor), 0);
+
+  const totalDespesas = transacoesFiltradas
+    .filter(t => t.tipo === "despesa")
+    .reduce((acc, t) => acc + parseFloat(t.valor), 0);
+
+  const saldoTotal = totalReceitas - totalDespesas;
+
+  const prepararDadosGrafico = (tFiltro) => {
+    const dadosMap = transacoesFiltradas // Gráfico agora segue os filtros também!
+      .filter(t => t.tipo === tFiltro)
       .reduce((acc, t) => {
         acc[t.categoria] = (acc[t.categoria] || 0) + parseFloat(t.valor);
         return acc;
       }, {});
     return Object.keys(dadosMap).map(cat => ({ name: cat, value: dadosMap[cat] }));
   };
-
-  const dadosReceitas = prepararDadosGrafico("receita");
-  const dadosDespesas = prepararDadosGrafico("despesa");
-
-  const transacoesFiltradas = transacoes.filter(t => {
-    const bateTipo = filtroTipo === "todos" || t.tipo === filtroTipo;
-    const bateData = filtroData === "" || t.data.includes(filtroData);
-    return bateTipo && bateData;
-  });
 
   if (!logado) {
     return (
@@ -94,6 +102,24 @@ function App() {
         <button onClick={() => {localStorage.clear(); window.location.reload();}} style={btnSair}>Sair</button>
       </header>
 
+      {/* --- DASHBOARD DE RESUMO (NOVIDADE) --- */}
+      <div style={gridResumo}>
+        <div style={{...cardResumo, borderLeft: '5px solid #3498db'}}>
+          <small>Saldo Total</small>
+          <h3 style={{color: saldoTotal >= 0 ? '#2ecc71' : '#e74c3c', margin: 0}}>
+            R$ {saldoTotal.toFixed(2)}
+          </h3>
+        </div>
+        <div style={{...cardResumo, borderLeft: '5px solid #2ecc71'}}>
+          <small>Receitas</small>
+          <h3 style={{color: '#2ecc71', margin: 0}}>R$ {totalReceitas.toFixed(2)}</h3>
+        </div>
+        <div style={{...cardResumo, borderLeft: '5px solid #e74c3c'}}>
+          <small>Despesas</small>
+          <h3 style={{color: '#e74c3c', margin: 0}}>R$ {totalDespesas.toFixed(2)}</h3>
+        </div>
+      </div>
+
       <button 
         onClick={() => setMostrarGraficos(!mostrarGraficos)} 
         style={{...btn, background: '#3498db', marginBottom: '15px'}}
@@ -107,7 +133,7 @@ function App() {
             <h4 style={{color: '#2ecc71', marginTop: 0}}>📈 Receitas por Categoria</h4>
             <div style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dadosReceitas}>
+                <BarChart data={prepararDadosGrafico("receita")}>
                   <XAxis dataKey="name" fontSize={10} />
                   <YAxis fontSize={10} />
                   <Tooltip />
@@ -116,12 +142,11 @@ function App() {
               </ResponsiveContainer>
             </div>
           </div>
-
           <div style={card}>
             <h4 style={{color: '#e74c3c', marginTop: 0}}>📉 Despesas por Categoria</h4>
             <div style={{ height: 180 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dadosDespesas}>
+                <BarChart data={prepararDadosGrafico("despesa")}>
                   <XAxis dataKey="name" fontSize={10} />
                   <YAxis fontSize={10} />
                   <Tooltip />
@@ -156,7 +181,7 @@ function App() {
             <div key={t.id} style={itemLista}>
               <div><b>{t.categoria}</b><br/><small>{t.data}</small></div>
               <span style={{ color: t.tipo === 'receita' ? '#2ecc71' : '#e74c3c', fontWeight: 'bold' }}>
-                R$ {parseFloat(t.valor).toFixed(2)}
+                {t.tipo === 'receita' ? '+' : '-'} R$ {parseFloat(t.valor).toFixed(2)}
               </span>
             </div>
           ))
@@ -178,6 +203,25 @@ function App() {
   );
 }
 
+// --- ESTILOS NOVOS E ATUALIZADOS ---
+const gridResumo = {
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '10px',
+  marginBottom: '20px'
+};
+
+const cardResumo = {
+  background: '#fff',
+  padding: '12px 15px',
+  borderRadius: '8px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center'
+};
+
+// ... (Manter os outros estilos abaixo conforme o código anterior)
 const containerApp = { maxWidth: 500, margin: "0 auto", padding: "10px", fontFamily: 'sans-serif' };
 const containerLogin = { maxWidth: 350, margin: "80px auto", textAlign: 'center', padding: '20px' };
 const card = { background: "#fff", padding: "15px", borderRadius: "12px", marginBottom: "15px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", boxSizing: 'border-box' };
