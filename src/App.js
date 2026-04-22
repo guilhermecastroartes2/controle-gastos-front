@@ -10,70 +10,58 @@ import {
 } from "recharts";
 
 function App() {
-  // =========================
-  // LOGIN
-  // =========================
-  const [logado, setLogado] = useState(false);
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [modoCadastro, setModoCadastro] = useState(false);
-
-  const usuario = localStorage.getItem("user");
-
-  // =========================
-  // ESTADOS
-  // =========================
   const [transacoes, setTransacoes] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [valor, setValor] = useState("");
   const [categoria, setCategoria] = useState("");
   const [tipo, setTipo] = useState("despesa");
   const [descricao, setDescricao] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const [tipoGrafico, setTipoGrafico] = useState("despesa");
 
-  // =========================
+  const [logado, setLogado] = useState(false);
+  const [modoCadastro, setModoCadastro] = useState(false);
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+
   // AUTO LOGIN
-  // =========================
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) setLogado(true);
   }, []);
 
-  // =========================
+  // BUSCAR DADOS
+  useEffect(() => {
+    if (!logado) return;
+
+    fetch(`https://controle-gastos-api-bfph.onrender.com/transacoes?email=${email}`)
+      .then(res => res.json())
+      .then(data => setTransacoes(data))
+      .catch(() => alert("Erro ao carregar dados"));
+  }, [logado, email]);
+
   // LOGIN
-  // =========================
   const fazerLogin = () => {
     fetch("https://controle-gastos-api-bfph.onrender.com/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, senha }),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ email, senha })
     })
-      .then((res) => {
+      .then(res => {
         if (!res.ok) throw new Error();
-        localStorage.setItem("user", email);
         setLogado(true);
+        localStorage.setItem("user", email);
       })
       .catch(() => alert("Login inválido"));
   };
 
-  // =========================
   // CADASTRO
-  // =========================
   const cadastrar = () => {
-    if (!email || !senha) {
-      alert("Preencha email e senha");
-      return;
-    }
-
     fetch("https://controle-gastos-api-bfph.onrender.com/register", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, senha }),
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ email, senha })
     })
       .then(() => {
         alert("Conta criada!");
@@ -82,21 +70,13 @@ function App() {
       .catch(() => alert("Erro ao cadastrar"));
   };
 
-  // =========================
-  // BUSCAR DADOS DO USUÁRIO
-  // =========================
-  useEffect(() => {
-    if (!usuario) return;
+  // LOGOUT
+  const logout = () => {
+    localStorage.removeItem("user");
+    setLogado(false);
+  };
 
-    fetch(`https://controle-gastos-api-bfph.onrender.com/transacoes?usuario=${usuario}`)
-      .then((res) => res.json())
-      .then((data) => setTransacoes(data))
-      .catch(() => alert("Erro ao carregar dados"));
-  }, [usuario]);
-
-  // =========================
   // ADICIONAR
-  // =========================
   const adicionar = () => {
     if (!valor || isNaN(valor)) {
       alert("Valor inválido");
@@ -107,56 +87,43 @@ function App() {
 
     fetch("https://controle-gastos-api-bfph.onrender.com/transacoes", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        usuario,
         valor: Number(valor),
         categoria,
         tipo,
         descricao,
+        email
       }),
     })
-      .then((res) => res.json())
-      .then((nova) => {
-        setTransacoes((prev) => [...prev, nova]);
+      .then(res => res.json())
+      .then(nova => {
+        setTransacoes(prev => [...prev, nova]);
         setValor("");
         setCategoria("");
         setDescricao("");
-        setTipo("despesa");
       })
       .finally(() => setLoading(false));
   };
 
-  // =========================
-  // FORMATAR
-  // =========================
-  const formatar = (valor) =>
-    Number(valor).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-
-  // =========================
   // RESUMO
-  // =========================
   const totalReceitas = transacoes
-    .filter((t) => t.tipo === "receita")
+    .filter(t => t.tipo === "receita")
     .reduce((acc, t) => acc + Number(t.valor), 0);
 
   const totalDespesas = transacoes
-    .filter((t) => t.tipo === "despesa")
+    .filter(t => t.tipo === "despesa")
     .reduce((acc, t) => acc + Number(t.valor), 0);
 
   const saldo = totalReceitas - totalDespesas;
 
-  // =========================
-  // DADOS DO GRÁFICO
-  // =========================
+  const formatar = (v) =>
+    Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  // DADOS GRÁFICO
   const dadosGrafico = Object.values(
     transacoes
-      .filter((t) => t.tipo === tipoGrafico)
+      .filter(t => t.tipo === tipoGrafico)
       .reduce((acc, t) => {
         if (!acc[t.categoria]) {
           acc[t.categoria] = { categoria: t.categoria, valor: 0 };
@@ -166,43 +133,23 @@ function App() {
       }, {})
   );
 
-  // =========================
   // LOGIN UI
-  // =========================
   if (!logado) {
     return (
-      <div style={{ padding: 20, maxWidth: 300, margin: "auto" }}>
-        <h2>{modoCadastro ? "📝 Criar Conta" : "🔐 Login"}</h2>
+      <div style={{ maxWidth: 300, margin: "100px auto", textAlign: "center" }}>
+        <h2>{modoCadastro ? "Criar Conta" : "Login"}</h2>
 
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ width: "100%", marginBottom: 10 }}
-        />
-
-        <input
-          type="password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          style={{ width: "100%", marginBottom: 10 }}
-        />
+        <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Senha" onChange={(e) => setSenha(e.target.value)} />
 
         {modoCadastro ? (
           <>
-            <button onClick={cadastrar} style={{ width: "100%" }}>
-              Criar Conta
-            </button>
-
+            <button onClick={cadastrar}>Cadastrar</button>
             <p onClick={() => setModoCadastro(false)}>Já tenho conta</p>
           </>
         ) : (
           <>
-            <button onClick={fazerLogin} style={{ width: "100%" }}>
-              Entrar
-            </button>
-
+            <button onClick={fazerLogin}>Entrar</button>
             <p onClick={() => setModoCadastro(true)}>Criar conta</p>
           </>
         )}
@@ -210,69 +157,92 @@ function App() {
     );
   }
 
-  // =========================
-  // UI PRINCIPAL
-  // =========================
   return (
-    <div style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h1>💰 Controle de Gastos</h1>
+    <div style={{
+      maxWidth: 600,
+      margin: "40px auto",
+      fontFamily: "Arial",
+      background: "#f5f6fa",
+      padding: 20,
+      borderRadius: 10
+    }}>
+
+      <h1 style={{ textAlign: "center" }}>💰 Controle de Gastos</h1>
+
+      <button onClick={logout} style={{ float: "right" }}>Sair</button>
 
       {/* RESUMO */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={card}>
         <p><b>Saldo:</b> {formatar(saldo)}</p>
         <p style={{ color: "green" }}>Receitas: {formatar(totalReceitas)}</p>
         <p style={{ color: "red" }}>Despesas: {formatar(totalDespesas)}</p>
       </div>
 
-      {/* BOTÕES GRÁFICO */}
-      <div style={{ marginBottom: 10 }}>
-        <button onClick={() => setTipoGrafico("receita")}>📈 Receitas</button>
-        <button onClick={() => setTipoGrafico("despesa")}>📉 Despesas</button>
+      {/* BOTÕES */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+        <button onClick={() => setTipoGrafico("receita")}>📈 Receita</button>
+        <button onClick={() => setTipoGrafico("despesa")}>📉 Despesa</button>
       </div>
 
-      {/* GRÁFICO RESPONSIVO */}
-      <div style={{ width: "100%", height: 250 }}>
-        <ResponsiveContainer>
+      {/* GRÁFICO */}
+      <div style={card}>
+        <h3>{tipoGrafico === "receita" ? "Receitas" : "Despesas"} por Categoria</h3>
+
+        <ResponsiveContainer width="100%" height={250}>
           <BarChart data={dadosGrafico}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="categoria" />
             <YAxis />
             <Tooltip />
-            <Bar
-              dataKey="valor"
-              fill={tipoGrafico === "receita" ? "green" : "red"}
-            />
+            <Bar dataKey="valor" fill={tipoGrafico === "receita" ? "green" : "red"} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* FORM */}
-      <input placeholder="Valor" value={valor} onChange={(e) => setValor(e.target.value)} />
-      <input placeholder="Categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} />
-      <input placeholder="Descrição" value={descricao} onChange={(e) => setDescricao(e.target.value)} />
+      <div style={card}>
+        <input placeholder="Valor" value={valor} onChange={(e) => setValor(e.target.value)} style={input}/>
+        <input placeholder="Categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} style={input}/>
+        <input placeholder="Descrição" value={descricao} onChange={(e) => setDescricao(e.target.value)} style={input}/>
 
-      <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-        <option value="despesa">Despesa</option>
-        <option value="receita">Receita</option>
-      </select>
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={input}>
+          <option value="despesa">Despesa</option>
+          <option value="receita">Receita</option>
+        </select>
 
-      <button onClick={adicionar} disabled={loading}>
-        {loading ? "Adicionando..." : "Adicionar"}
-      </button>
+        <button onClick={adicionar} style={btn}>
+          {loading ? "..." : "Adicionar"}
+        </button>
+      </div>
 
-      {/* LISTA */}
-      {transacoes.map((t, i) => (
-        <div key={i}>
-          <p>{t.data}</p>
-          <p style={{ color: t.tipo === "receita" ? "green" : "red" }}>
-            {formatar(t.valor)}
-          </p>
-          <p>{t.categoria}</p>
-          <p>{t.descricao}</p>
-        </div>
-      ))}
     </div>
   );
 }
+
+// estilos
+const card = {
+  background: "#fff",
+  padding: 15,
+  borderRadius: 8,
+  marginBottom: 20,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+};
+
+const input = {
+  width: "100%",
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 5,
+  border: "1px solid #ddd"
+};
+
+const btn = {
+  width: "100%",
+  padding: 12,
+  background: "#4CAF50",
+  color: "#fff",
+  border: "none",
+  borderRadius: 5
+};
 
 export default App;
