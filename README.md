@@ -1,70 +1,77 @@
-# Getting Started with Create React App
+# 💰 Controle de Gastos Pessoal - Full Stack Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> 🔗 **Acesse o projeto online:** [CLIQUE AQUI PARA VER O APP](https://controle-gastos-front-pi.vercel.app/)
 
-## Available Scripts
+💰 Controle de Gastos Pessoal - Full Stack Project
+Este projeto é uma aplicação Full Stack de controle financeiro pessoal, desenvolvida para oferecer uma experiência intuitiva tanto em desktop quanto em dispositivos móveis. A aplicação permite o gerenciamento de receitas e despesas, visualização de dados através de gráficos e filtragem inteligente por períodos.
 
-In the project directory, you can run:
+🚀 Tecnologias Utilizadas
+O projeto foi construído utilizando as tecnologias mais modernas do mercado:
 
-### `npm start`
+Frontend
+React.js: Biblioteca principal para construção da interface de usuário.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Recharts: Biblioteca de gráficos para visualização dinâmica de receitas e despesas.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+LocalStorage: Utilizado para persistência de sessão do usuário no navegador.
 
-### `npm test`
+CSS-in-JS: Estilização responsiva focada em experiência mobile-first.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Backend
+Python com Flask: Micro-framework para criação da API REST.
 
-### `npm run build`
+SQLite: Banco de dados relacional para armazenamento seguro de transações e usuários.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Flask-CORS: Gerenciamento de permissões de acesso entre diferentes origens.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Infraestrutura / Deploy
+Vercel: Hospedagem do Frontend com integração contínua (CI/CD).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Render: Hospedagem da API e do servidor de banco de dados.
 
-### `npm run eject`
+Git/GitHub: Controle de versão e versionamento de código.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+🛠️ Funcionalidades Implementadas
+Autenticação: Sistema de login para separar os dados por usuário.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Dashboard de Resumo: Cartões dinâmicos que somam Saldo Total, Entradas e Saídas baseados nos filtros aplicados.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Gráficos Interativos: Visualização por categorias através de gráficos de barras (com opção de ocultar/exibir para economizar espaço).
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Filtros Avançados: Possibilidade de buscar transações por tipo (Receita/Despesa) e por intervalo de datas (Data Início até Data Fim).
 
-## Learn More
+Gestão de Lançamentos: Adição de descrição detalhada e funcionalidade de exclusão de registros.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Responsividade: Interface totalmente adaptada para uso em smartphones.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+📈 Evolução do Projeto (Aprendizados Técnicos)
+Durante o desenvolvimento, enfrentei e resolvi desafios reais de engenharia de software:
 
-### Code Splitting
+Migração de Persistência: Evoluí o sistema de armazenamento de arquivos CSV para um banco de dados relacional SQLite, garantindo maior integridade dos dados e suporte a consultas SQL.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Solução de Build no Vercel: Ajustei regras rigorosas de ESLint e tratei dependências de Hooks (useCallback, useEffect), garantindo que o código passasse nos testes de produção.
 
-### Analyzing the Bundle Size
+Deploy em Nuvem: Configurei a comunicação entre o frontend (Vercel) e o backend (Render), lidando com problemas de CORS e latência de rede.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+UX Mobile: Implementei funções de toggle para os gráficos, focando na usabilidade em telas pequenas.
 
-### Making a Progressive Web App
+🔧 Como Rodar o Projeto Localmente
+Clone o repositório:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Bash
+git clone https://github.com/seu-usuario/seu-repositorio.git
+Backend:
 
-### Advanced Configuration
+Bash
+cd backend
+pip install flask flask-cors
+python api.py
+Frontend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Bash
+cd frontend
+npm install
+npm start
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+📝 Notas sobre Infraestrutura
+Atualmente, o projeto utiliza o plano gratuito do Render. Devido à natureza efêmera do sistema de arquivos desta plataforma, o banco de dados SQLite pode reiniciar periodicamente. Este comportamento é conhecido e faz parte das limitações do ambiente de demonstração gratuito.
